@@ -2,7 +2,7 @@
 // ============================================================
 //  Arandia College eLMS — Accounts API
 //  File: api/accounts.php
-// ============================================================
+
 session_start();
 require_once '../config/conn.php';
 
