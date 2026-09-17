@@ -172,7 +172,7 @@ INSERT INTO `password_resets` (`user_id`, `token`, `expires_at`, `used`) VALUES
 (10, '0433efd3425cb5eee6a8bba6d0402224324248474b38d8cdb15f4f21bd05ac42', '2026-04-17 19:14:34', 0);
 
 --
--- Dumping data for table `quizzes`
+
 --
 
 INSERT INTO `quizzes` (`id`, `course_id`, `title`, `description`, `time_limit`, `max_score`, `open_at`, `close_at`, `quiz_type`, `file_path`, `created_at`) VALUES
@@ -184,7 +184,7 @@ INSERT INTO `quizzes` (`id`, `course_id`, `title`, `description`, `time_limit`, 
 
 --
 -- Dumping data for table `quiz_attempts`
---
+
 
 INSERT INTO `quiz_attempts` (`id`, `quiz_id`, `student_id`, `score`, `file_path`, `remarks`, `finished_at`, `started_at`, `submitted_at`, `status`) VALUES
 (1, 1, 12, 100.00, NULL, NULL, NULL, '2026-03-15 14:05:30', '2026-03-15 14:05:33', 'Submitted'),
