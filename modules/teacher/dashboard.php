@@ -1859,7 +1859,7 @@ function sectionColor(string $sec): array
   <!-- ADMIN-STYLE SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <a href="index.php" class="sidebar-brand">
+      <a href="/Capstone1/index.php" class="sidebar-brand">
         <img src="picture/logo.jpg" alt="Logo" class="sidebar-logo" onerror="this.style.display='none'">
         <div class="sidebar-brand-text">
           <strong>Arandia College</strong>
@@ -1899,7 +1899,7 @@ function sectionColor(string $sec): array
     </nav>
 
     <div class="sidebar-footer">
-      <a href="logout.php" class="sidebar-link danger">
+      <a href="/Capstone1/logout.php" class="sidebar-link danger">
         <span class="sidebar-icon">[Exit]</span> Sign Out
       </a>
     </div>
@@ -1934,7 +1934,7 @@ function sectionColor(string $sec): array
           </div>
         </div>
 
-        <a href="logout.php" class="btn-logout">Sign Out</a>
+        <a href="/Capstone1/logout.php" class="btn-logout">Sign Out</a>
       </div>
     </header>
 
