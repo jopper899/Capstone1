@@ -4,9 +4,12 @@
 //  File: api/enrollments.php
 // ============================================================
 session_start();
-require_once '../config/conn.php';
+require_once __DIR__ . '/../config/conn.php';
 
 header('Content-Type: application/json');
+ob_start();
+function apiJson($payload, $status = 200) { if (ob_get_length()) ob_clean(); http_response_code($status); echo json_encode($payload); exit; }
+set_error_handler(function($errno, $errstr) { apiJson(['success'=>false,'message'=>'PHP error: '.$errstr], 500); });
 
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
     echo json_encode(['success' => false, 'message' => 'Unauthorized.']); exit;
@@ -32,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && $action === 'list') {
          ORDER BY u.last_name, u.first_name, c.course_code"
     );
     while ($r = $res->fetch_assoc()) $rows[] = $r;
-    echo json_encode(['success' => true, 'data' => $rows]); exit;
+    apiJson(['success' => true, 'data' => $rows]);
 }
 
 // ── GET: list all students (for dropdown) ─────────────────────────────────
