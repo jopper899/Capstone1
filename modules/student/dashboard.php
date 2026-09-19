@@ -1673,6 +1673,19 @@ $thumbGrads = [
     </div>
 
     <script>
+    async function parseApiResponse(res) {
+      const raw = await res.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        throw new Error(`Server returned an invalid response (${res.status}).`);
+      }
+      if (!res.ok) {
+        throw new Error(data.message || `Request failed (${res.status}).`);
+      }
+      return data;
+    }
         // Navigation Logic
         function showPanel(name, btn) {
             document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
@@ -1822,7 +1835,7 @@ $thumbGrads = [
                 }
             }
 
-            fetch('api/module_progress.php?action=mark', {
+            fetch('/Capstone1/api/module_progress.php?action=mark', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ module_id: mid, course_id: cid })
@@ -1842,8 +1855,8 @@ $thumbGrads = [
             document.getElementById('quiz-submit-btn').disabled = true;
 
             try {
-                const res = await fetch(`api/student_quiz.php?action=start&id=${id}`);
-                const data = await res.json();
+                const res = await fetch(`/Capstone1/api/student_quiz.php?action=start&id=${id}`);
+                const data = await parseApiResponse(res);
 
                 if (!data.success) {
                     document.getElementById('quiz-modal-body').innerHTML = '<p style="color:red;">' + data.message + '</p>';
@@ -1895,12 +1908,12 @@ $thumbGrads = [
             btn.disabled = true; btn.innerText = 'Submitting...';
 
             try {
-                const res = await fetch('api/student_quiz.php?action=submit', {
+                const res = await fetch('/Capstone1/api/student_quiz.php?action=submit', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ attempt_id: currentQuizId, answers })
                 });
-                const data = await res.json();
+                const data = await parseApiResponse(res);
 
                 if (data.success) {
                     const scorePct = Math.round(data.score / data.max_score * 100);
@@ -1941,7 +1954,7 @@ $thumbGrads = [
                     btn.disabled = false; btn.innerText = 'Submit Quiz';
                 }
             } catch (e) {
-                alert('Connection error.');
+                alert('Request failed.');
                 btn.disabled = false; btn.innerText = 'Submit Quiz';
             }
         }
@@ -1973,8 +1986,8 @@ $thumbGrads = [
             btn.disabled = true; btn.innerText = 'Uploading...';
 
             try {
-                const res = await fetch('api/student_quiz.php?action=submit_file', { method: 'POST', body: fd });
-                const data = await res.json();
+                const res = await fetch('/Capstone1/api/student_quiz.php?action=submit_file', { method: 'POST', body: fd });
+                const data = await parseApiResponse(res);
 
                 if (data.success) {
                     document.getElementById('submitModal').classList.add('hidden');
