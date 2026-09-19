@@ -1842,11 +1842,24 @@ $hsSections = [
         password: document.getElementById('edit-password').value,
       };
       try {
-        const res = await fetch('api/accounts.php?action=update', { method: 'PUT', body: JSON.stringify(payload) });
-        const data = await res.json();
+        const res = await fetch('/Capstone1/api/admin/accounts.php?action=update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const raw = await res.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (parseError) {
+          throw new Error(`Server returned an invalid response (${res.status}).`);
+        }
+        if (!res.ok) {
+          throw new Error(data.message || `Request failed (${res.status}).`);
+        }
         if (data.success) { closeModal('editModal'); showToast('✅ Account updated!'); setTimeout(() => location.reload(), 1200); }
         else showToast('⚠️ ' + data.message, true);
-      } catch (e) { showToast('⚠️ Network error. Please try again.', true); }
+      } catch (e) { showToast('⚠️ ' + (e.message || 'Request failed. Please try again.'), true); }
     }
     function openDelete(id) { document.getElementById('delete-id').value = id; document.getElementById('deleteModal').classList.add('show'); }
     async function submitDelete() {
