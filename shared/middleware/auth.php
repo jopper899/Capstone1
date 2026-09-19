@@ -1,6 +1,13 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) session_start();
+// Shared authentication helpers.
+// Use this file from module pages instead of duplicating session checks.
 
-function requireLogin(string $redirect = '../../login.php'): void {
-    if (!isset($_SESSION['user_id'])) { header('Location: '.$redirect); exit; }
+require_once __DIR__ . '/../../config/session.php';
+
+function requireLogin(string $redirect = '../../login.php'): void
+{
+    if (!isLoggedIn()) {
+        header('Location: ' . $redirect);
+        exit;
+    }
 }
