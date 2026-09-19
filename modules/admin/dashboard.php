@@ -1727,6 +1727,20 @@ $hsSections = [
   <div class="toast" id="toast"></div>
 
   <script>
+    async function parseApiResponse(res) {
+      const raw = await res.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        throw new Error(`Server returned an invalid response (${res.status}).`);
+      }
+      if (!res.ok) {
+        throw new Error(data.message || `Request failed (${res.status}).`);
+      }
+      return data;
+    }
+
     const panelNames = {
       dashboard: 'Dashboard',
       create: 'Create Account',
@@ -1866,10 +1880,10 @@ $hsSections = [
       const id = document.getElementById('delete-id').value;
       try {
         const res = await fetch(`api/accounts.php?action=delete&id=${id}`, { method: 'DELETE' });
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (data.success) { closeModal('deleteModal'); showToast('🗑️ Account deleted.'); setTimeout(() => location.reload(), 1200); }
         else showToast('⚠️ ' + data.message, true);
-      } catch (e) { showToast('⚠️ Network error. Please try again.', true); }
+      } catch (e) { showToast('⚠️ ' + (e.message || 'Request failed. Please try again.'), true); }
     }
     <?php if ($toast): ?>showToast('<?= addslashes($toast) ?>', <?= $isError ? 'true' : 'false' ?>); <?php endif; ?>
 
@@ -1879,12 +1893,12 @@ $hsSections = [
     async function loadAssignments() {
       try {
         const res = await fetch('api/teacher_assignments.php?action=list');
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (data.success) {
           allAssignments = data.data;
           renderAssignTable(allAssignments);
         }
-      } catch (e) { }
+      } catch (e) { console.error(e); }
     }
 
     async function loadTeacherAssignments() {
@@ -1902,7 +1916,7 @@ $hsSections = [
       wrap.innerHTML = '<div style="padding:1rem;color:#aaa;font-size:0.82rem;">Loading...</div>';
       try {
         const res = await fetch(`api/teacher_assignments.php?action=list&teacher_id=${tid}`);
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (!data.success || data.data.length === 0) {
           wrap.innerHTML = '<div class="empty-assign"><span>📭</span>No assignments yet for this teacher.</div>';
           return;
@@ -1984,7 +1998,7 @@ $hsSections = [
             method: 'POST',
             body: JSON.stringify({ teacher_id, course_id, section, school_year, semester })
           });
-          const data = await res.json();
+          const data = await parseApiResponse(res);
           if (data.success) saved++;
           else errors.push(data.message);
         } catch (e) { errors.push('Network error'); }
@@ -2006,7 +2020,7 @@ $hsSections = [
       if (!confirm('Remove this assignment?')) return;
       try {
         const res = await fetch(`api/teacher_assignments.php?action=remove&id=${id}`, { method: 'DELETE' });
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (data.success) {
           showToast('🗑️ Assignment removed.');
           allAssignments = allAssignments.filter(a => a.id != id);
@@ -2043,9 +2057,9 @@ $hsSections = [
     async function loadAllEnrollments() {
       try {
         const res = await fetch('api/enrollments.php?action=list');
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (data.success) { allEnrollments = data.data; renderEnrTable(allEnrollments); }
-      } catch (e) { }
+      } catch (e) { console.error(e); }
     }
 
     async function loadStudentEnrollments() {
@@ -2068,7 +2082,7 @@ $hsSections = [
 
       try {
         const res = await fetch(`api/enrollments.php?action=list&student_id=${sid}`);
-        const data = await res.json();
+        const data = await parseApiResponse(res);
 
         if (!data.success || !data.data.length) {
           wrap.innerHTML = '<div class="empty-assign"><span>📭</span>No subjects enrolled yet.</div>';
@@ -2146,7 +2160,7 @@ $hsSections = [
         const res = await fetch('api/enrollments.php?action=enroll', {
           method: 'POST', body: JSON.stringify({ student_id, course_ids })
         });
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (data.success) {
           showToast('✅ ' + data.message);
           loadStudentEnrollments();
@@ -2161,7 +2175,7 @@ $hsSections = [
       if (!confirm('Remove this enrollment?')) return;
       try {
         const res = await fetch(`api/enrollments.php?action=remove&id=${id}`, { method: 'DELETE' });
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (data.success) {
           showToast('🗑️ Enrollment removed.');
           allEnrollments = allEnrollments.filter(e => e.id != id);
@@ -2195,7 +2209,7 @@ $hsSections = [
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title, body, course_id: courseId || null })
         });
-        const data = await res.json();
+        const data = await parseApiResponse(res);
 
         if (data.success) {
           showToast('✅ Announcement posted!');
@@ -2248,7 +2262,7 @@ $hsSections = [
       if (!confirm('Delete this announcement? Students will no longer see it.')) return;
       try {
         const res  = await fetch(`/Capstone1/api/announcements.php?action=delete&id=${id}`, { method: 'DELETE' });
-        const data = await res.json();
+        const data = await parseApiResponse(res);
         if (data.success) {
           btn.closest('.ann-item').remove();
           showToast('🗑️ Announcement deleted.');
