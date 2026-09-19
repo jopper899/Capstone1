@@ -3,7 +3,7 @@
 //  Arandia College eLMS — Admin Panel
 //  File: admin.php  |  Target: SHS & HS
 // ============================================================
-session_start();
+require_once __DIR__ . '/../../shared/middleware/admin.php';
 require_once __DIR__ . '/../../config/conn.php';
 
 $first_name = $_SESSION['first_name'];
