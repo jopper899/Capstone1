@@ -1632,7 +1632,7 @@ $thumbGrads = [
                             <p style="color:var(--text-muted);">Student ID: <?= $user_id ?></p>
                         </div>
                     </div>
-                    <?php include 'includes/profile_panel.php'; ?>
+                    <?php include 'shared/components/profile_panel.php'; ?>
                 </div>
             </div>
 
