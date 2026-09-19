@@ -5,6 +5,7 @@
 // ============================================================
 session_start();
 require_once 'config/conn.php';
+require_once 'config/mail.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -92,14 +93,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['forgot_password'])) {
           // Server settings
           $mail->SMTPDebug = SMTP::DEBUG_OFF; // Ensure this is OFF in production
           $mail->isSMTP();
-          $mail->Host = 'smtp.gmail.com';
+          $mail->Host = SMTP_HOST;
           $mail->SMTPAuth = true;
-          $mail->Username = 'marc.macarubbo@gmail.com';   // UPDATE: Your Gmail
-          $mail->Password = 'zkre tdpp feve edeh';        // UPDATE: Gmail App Password
+          $mail->Username = SMTP_USERNAME;
+          $mail->Password = SMTP_PASSWORD;
           $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-          $mail->Port = 465;
+          $mail->Port = SMTP_PORT;
 
-          $mail->setFrom('marc.macarubbo@gmail.com', 'Arandia College eLMS');
+          $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
           $mail->addAddress($fpEmail);
 
           $mail->isHTML(true);
@@ -263,14 +264,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['forgot_password'])) 
         try {
           $otpMail->SMTPDebug  = SMTP::DEBUG_OFF;
           $otpMail->isSMTP();
-          $otpMail->Host       = 'smtp.gmail.com';
+          $otpMail->Host       = SMTP_HOST;
           $otpMail->SMTPAuth   = true;
-          $otpMail->Username   = 'marc.macarubbo@gmail.com';
-          $otpMail->Password   = 'zkre tdpp feve edeh';
+          $otpMail->Username   = SMTP_USERNAME;
+          $otpMail->Password   = SMTP_PASSWORD;
           $otpMail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-          $otpMail->Port       = 465;
+          $otpMail->Port       = SMTP_PORT;
 
-          $otpMail->setFrom('marc.macarubbo@gmail.com', 'Arandia College eLMS');
+          $otpMail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
           $otpMail->addAddress($user['email']);
 
           $otpMail->isHTML(true);
