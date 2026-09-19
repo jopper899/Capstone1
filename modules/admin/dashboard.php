@@ -6,11 +6,6 @@
 session_start();
 require_once __DIR__ . '/../../config/conn.php';
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
-  header('Location: ../../login.php');
-  exit;
-}
-
 $first_name = $_SESSION['first_name'];
 $last_name = $_SESSION['last_name'];
 
