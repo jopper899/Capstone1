@@ -3,13 +3,13 @@
 //  Arandia College eLMS — Accounts API
 //  File: api/accounts.php
 
-session_start();
-require_once '../config/conn.php';
+require_once __DIR__ . '/../config/session.php';
+require_once __DIR__ . '/../config/conn.php';
 
 header('Content-Type: application/json');
 
 // Auth check — Admin only
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'Admin') {
+if (!isLoggedIn() || ($_SESSION['role'] ?? '') !== 'Admin') {
     http_response_code(403);
     echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
     exit;
@@ -20,7 +20,14 @@ $action = $_GET['action'] ?? '';
 
 // ── POST: Create account ──────────────────────────────────
 if ($method === 'POST' && $action === 'create') {
-    $data = json_decode(file_get_contents('php://input'), true);
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw, true);
+
+    if (!is_array($data)) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'message' => 'Invalid JSON request body.']);
+        exit;
+    }
 
     $required = ['first_name', 'last_name', 'role', 'school_id', 'username', 'password'];
     foreach ($required as $f) {
@@ -66,6 +73,12 @@ if ($method === 'POST' && $action === 'create') {
          middle_name, email, contact, section_dept, status)
          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
     );
+    if (!$stmt) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Database error while preparing account creation.']);
+        exit;
+    }
+
     $stmt->bind_param(
         'sssssssssss',
         $data['school_id'],
