@@ -5,6 +5,7 @@
 // ============================================================
 session_start();
 require_once 'config/conn.php';
+require_once 'config/mail.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
@@ -72,14 +73,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp'])) {
         try {
             $mail->SMTPDebug = SMTP::DEBUG_OFF;
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = SMTP_HOST;
             $mail->SMTPAuth = true;
-            $mail->Username = 'marc.macarubbo@gmail.com';
-            $mail->Password = 'zkre tdpp feve edeh';
+            $mail->Username = SMTP_USERNAME;
+            $mail->Password = SMTP_PASSWORD;
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-            $mail->Port = 465;
+            $mail->Port = SMTP_PORT;
 
-            $mail->setFrom('marc.macarubbo@gmail.com', 'Arandia College eLMS');
+            $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
             $mail->addAddress($resendUser['email']);
             $mail->isHTML(true);
             $mail->Subject = 'Arandia College eLMS — Your New Login OTP';
