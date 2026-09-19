@@ -1790,11 +1790,24 @@ $hsSections = [
         status: document.getElementById('f-status').value,
       };
       try {
-        const res = await fetch('api/accounts.php?action=create', { method: 'POST', body: JSON.stringify(payload) });
-        const data = await res.json();
+        const res = await fetch('/Capstone1/api/admin/accounts.php?action=create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const raw = await res.text();
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch (parseError) {
+          throw new Error(`Server returned an invalid response (${res.status}).`);
+        }
+        if (!res.ok) {
+          throw new Error(data.message || `Request failed (${res.status}).`);
+        }
         if (data.success) { showToast('✅ Account created successfully!'); resetForm(); setTimeout(() => location.reload(), 1500); }
         else { err.textContent = '⚠️ ' + data.message; err.style.display = 'block'; }
-      } catch (e) { err.textContent = '⚠️ Network error. Please try again.'; err.style.display = 'block'; }
+      } catch (e) { err.textContent = '⚠️ ' + (e.message || 'Request failed. Please try again.'); err.style.display = 'block'; }
     }
     function openEdit(a) {
       console.log('openEdit called, a.id =', a.id, 'parsed =', parseInt(a.id, 10));
