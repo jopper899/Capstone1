@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+config/mail.local.php
 
 # Local/editor files
 .vscode/
