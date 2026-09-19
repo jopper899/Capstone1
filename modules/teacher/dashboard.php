@@ -3085,7 +3085,7 @@ function sectionColor(string $sec): array
                 const courseId    = cb.value;
                 const courseLabel = cb.dataset.label;
                 try {
-                    const res  = await fetch('api/annoucements.php?action=create', {
+                    const res  = await fetch('api/announcements.php?action=create', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ course_id: courseId, title, body })
