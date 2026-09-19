@@ -986,7 +986,7 @@ $hsSections = [
     </nav>
 
     <div class="sidebar-footer">
-      <a href="logout.php" class="sidebar-link danger">
+      <a href="/Capstone1/logout.php" class="sidebar-link danger">
         <span class="sidebar-icon">⎋</span> Sign Out</a>
     </div>
   </aside>
@@ -1001,7 +1001,7 @@ $hsSections = [
       </div>
       <div class="topbar-right">
         <span class="topbar-badge">🛡️ Admin Panel</span>
-        <a href="logout.php" class="btn-logout">Sign Out</a>
+        <a href="/Capstone1/logout.php" class="btn-logout">Sign Out</a>
       </div>
     </header>
 
