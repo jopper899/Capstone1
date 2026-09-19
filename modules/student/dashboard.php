@@ -3,7 +3,7 @@
 //  Arandia College eLMS — Student Dashboard
 //  File: student.php  |  Target: SHS & HS
 // ============================================================
-session_start();
+require_once __DIR__ . '/../../shared/middleware/student.php';
 require_once __DIR__ . '/../../config/conn.php';
 
 $first_name = $_SESSION['first_name'];
