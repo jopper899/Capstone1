@@ -1940,6 +1940,19 @@ function sectionColor(string $sec): array
 
     <!-- Notification data for notification bell: announcements + pending submissions -->
     <script>
+    async function parseApiResponse(res) {
+      const raw = await res.text();
+      let data;
+      try {
+        data = JSON.parse(raw);
+      } catch (e) {
+        throw new Error(`Server returned an invalid response (${res.status}).`);
+      }
+      if (!res.ok) {
+        throw new Error(data.message || `Request failed (${res.status}).`);
+      }
+      return data;
+    }
     const _notifData = <?php
         $notifItems = [];
 
@@ -3085,12 +3098,12 @@ function sectionColor(string $sec): array
                 const courseId    = cb.value;
                 const courseLabel = cb.dataset.label;
                 try {
-                    const res  = await fetch('api/announcements.php?action=create', {
+                    const res  = await fetch('/Capstone1/api/announcements.php?action=create', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ course_id: courseId, title, body })
                     });
-                    const data = await res.json();
+                    const data = await parseApiResponse(res);
                     if (data.success) {
                         successCount++;
                         // Prepend to list
@@ -3139,8 +3152,8 @@ function sectionColor(string $sec): array
         async function deleteAnnouncement(id, btn) {
             if (!confirm('Delete this announcement? Students will no longer see it.')) return;
             try {
-                const res  = await fetch(`api/announcements.php?action=delete&id=${id}`, { method: 'DELETE' });
-                const data = await res.json();
+                const res  = await fetch(`/Capstone1/api/announcements.php?action=delete&id=${id}`, { method: 'DELETE' });
+                const data = await parseApiResponse(res);
                 if (data.success) {
                     btn.closest('.ann-item').remove();
                     showToast(' Announcement deleted.');
@@ -3154,7 +3167,7 @@ function sectionColor(string $sec): array
                     showToast('[!] Could not delete.', true);
                 }
             } catch(e) {
-                showToast('[!] Network error.', true);
+                showToast('[!] Request failed.', true);
             }
         }
 
@@ -3196,8 +3209,8 @@ function sectionColor(string $sec): array
             const pBtn = document.getElementById('view-progress-btn');
             if (!cid) { wrap.innerHTML = emptyCard('[Folder]', 'Select a subject to view modules.'); if (pBtn) pBtn.style.display = 'none'; return; }
             wrap.innerHTML = loadingCard();
-            const res = await fetch(`api/modules.php?action=list&course_id=${cid}`);
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/modules.php?action=list&course_id=${cid}`);
+            const data = await parseApiResponse(res);
             if (!data.success || !data.data.length) { wrap.innerHTML = emptyCard('', 'No modules yet. Click <strong>+ Add Module</strong>.'); if (pBtn) pBtn.style.display = 'none'; return; }
             if (pBtn) pBtn.style.display = '';
             wrap.innerHTML = `<div style="background:white;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.07);overflow:hidden">
@@ -3251,21 +3264,21 @@ function sectionColor(string $sec): array
             if (document.getElementById('mod-published').checked) fd.append('published', '1');
             const file = document.getElementById('mod-file').files[0]; if (file) fd.append('file', file);
             if (!fd.get('course_id') || !fd.get('title')) { err.textContent = '[!] Subject and title required.'; err.style.display = 'block'; return; }
-            const res = await fetch(`api/modules.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', body: fd });
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/modules.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', body: fd });
+            const data = await parseApiResponse(res);
             if (data.success) { closeModal('modModal'); showToast(editId ? '[Check] Module updated!' : '[Check] Module added!'); loadModules(); }
             else { err.textContent = '[!] ' + data.message; err.style.display = 'block'; }
         }
 
-        async function togglePublish(id) { const fd = new FormData(); fd.append('id', id); await fetch('api/modules.php?action=toggle', { method: 'POST', body: fd }); showToast('[Check] Module updated!'); loadModules(); }
-        async function deleteModule(id) { if (!confirm('Delete this module?')) return; await fetch(`api/modules.php?action=delete&id=${id}`, { method: 'DELETE' }); showToast(' Module deleted.'); loadModules(); }
+        async function togglePublish(id) { const fd = new FormData(); fd.append('id', id); await fetch('/Capstone1/api/modules.php?action=toggle', { method: 'POST', body: fd }); showToast('[Check] Module updated!'); loadModules(); }
+        async function deleteModule(id) { if (!confirm('Delete this module?')) return; await fetch(`/Capstone1/api/modules.php?action=delete&id=${id}`, { method: 'DELETE' }); showToast(' Module deleted.'); loadModules(); }
 
         async function loadModuleProgress() {
             const cid = document.getElementById('mod-course-select').value; if (!cid) return;
             document.getElementById('mod-progress-wrap').style.display = '';
             const wrap = document.getElementById('mod-progress-table'); wrap.innerHTML = loadingCard();
-            const res = await fetch(`api/module_progress.php?action=course_progress&course_id=${cid}`);
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/module_progress.php?action=course_progress&course_id=${cid}`);
+            const data = await parseApiResponse(res);
             if (!data.success || !data.data.length) { wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:#bbb">No students enrolled yet.</div>'; return; }
             wrap.innerHTML = `<table width="100%"><thead><tr><th>Student</th><th>Section</th><th>Progress</th><th>Done / Total</th></tr></thead><tbody>
         ${data.data.map(s => `<tr>
@@ -3303,8 +3316,8 @@ function sectionColor(string $sec): array
             const wrap = document.getElementById('assign-list-wrap');
             if (!cid) { wrap.innerHTML = emptyCard('[Clipboard]', 'Select a subject to view assignments.'); return; }
             wrap.innerHTML = loadingCard();
-            const res = await fetch(`api/assignments.php?action=list&course_id=${cid}`);
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/assignments.php?action=list&course_id=${cid}`);
+            const data = await parseApiResponse(res);
             if (!data.success || !data.data.length) { wrap.innerHTML = emptyCard('', 'No assignments yet. Click <strong>+ Create Assignment</strong>.'); return; }
             wrap.innerHTML = `<div style="background:white;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.07);overflow:hidden">
         <div style="padding:1.1rem 1.5rem;border-bottom:1px solid #f0f2f5;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:#1a1a2e">[Clipboard] Assignments (${data.data.length})</div>
@@ -3357,20 +3370,20 @@ function sectionColor(string $sec): array
             fd.append('max_score', document.getElementById('assign-score').value || 100);
             const file = document.getElementById('assign-file').files[0]; if (file) fd.append('file', file);
             if (!fd.get('course_id') || !fd.get('title')) { err.textContent = '[!] Subject and title required.'; err.style.display = 'block'; return; }
-            const res = await fetch(`api/assignments.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', body: fd });
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/assignments.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', body: fd });
+            const data = await parseApiResponse(res);
             if (data.success) { closeModal('assignModal'); showToast(editId ? '[Check] Assignment updated!' : '[Check] Assignment created!'); loadAssignments(); }
             else { err.textContent = '[!] ' + data.message; err.style.display = 'block'; }
         }
 
-        async function deleteAssignment(id) { if (!confirm('Delete this assignment and all submissions?')) return; await fetch(`api/assignments.php?action=delete&id=${id}`, { method: 'DELETE' }); showToast(' Assignment deleted.'); loadAssignments(); }
+        async function deleteAssignment(id) { if (!confirm('Delete this assignment and all submissions?')) return; await fetch(`/Capstone1/api/assignments.php?action=delete&id=${id}`, { method: 'DELETE' }); showToast(' Assignment deleted.'); loadAssignments(); }
 
         async function viewSubmissions(assignId, title, maxScore) {
             document.getElementById('submissions-title').textContent = '[Clipboard] ' + title + ' — Submissions';
             document.getElementById('submissions-body').innerHTML = loadingCard();
             openModal('submissionsModal');
-            const res = await fetch(`api/assignments.php?action=submissions&id=${assignId}`);
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/assignments.php?action=submissions&id=${assignId}`);
+            const data = await parseApiResponse(res);
             if (!data.success || !data.data.length) { document.getElementById('submissions-body').innerHTML = '<div style="padding:3rem;text-align:center;color:#bbb"><div style="font-size:2.5rem;margin-bottom:.5rem"></div>No submissions yet.</div>'; return; }
             document.getElementById('submissions-body').innerHTML = `
         <div style="padding:.5rem 0">
@@ -3405,8 +3418,8 @@ function sectionColor(string $sec): array
             const inputs = document.querySelectorAll('#submissions-body input[data-submission-id]');
             const grades = [];
             inputs.forEach(inp => { const ri = document.querySelector(`input[data-remarks-for="${inp.dataset.submissionId}"]`); grades.push({ submission_id: inp.dataset.submissionId, student_id: inp.dataset.studentId, assign_id: inp.dataset.assignId, score: inp.value, remarks: ri ? ri.value : '' }); });
-            const res = await fetch('api/assignments.php?action=grade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ grades }) });
-            const data = await res.json();
+            const res = await fetch('/Capstone1/api/assignments.php?action=grade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ grades }) });
+            const data = await parseApiResponse(res);
             if (data.success) { showToast('[Check] Grades saved!'); closeModal('submissionsModal'); loadAssignments(); }
             else showToast('[!] Could not save grades.', true);
         }
@@ -3446,8 +3459,8 @@ function sectionColor(string $sec): array
             const wrap = document.getElementById('quiz-list-wrap');
             if (!cid) { wrap.innerHTML = emptyCard('[Quiz]', 'Select a subject to view quizzes.'); return; }
             wrap.innerHTML = loadingCard();
-            const res = await fetch(`api/quizzes.php?action=list&course_id=${cid}`);
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/quizzes.php?action=list&course_id=${cid}`);
+            const data = await parseApiResponse(res);
             if (!data.success || !data.data.length) { wrap.innerHTML = emptyCard('', 'No quizzes yet. Click <strong>+ Create Quiz</strong>.'); return; }
             wrap.innerHTML = `<div style="background:white;border-radius:16px;box-shadow:0 2px 14px rgba(0,0,0,.07);overflow:hidden">
         <div style="padding:1.1rem 1.5rem;border-bottom:1px solid #f0f2f5;font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:800;color:#1a1a2e">[Quiz] Quizzes (${data.data.length})</div>
@@ -3520,8 +3533,8 @@ function sectionColor(string $sec): array
                 const file = document.getElementById('quiz-file').files[0];
                 if (file) fd.append('file', file);
                 else if (!editId) { err.textContent = '[!] Please upload a quiz file.'; err.style.display = 'block'; return; }
-                const res = await fetch(`api/quizzes.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', body: fd });
-                const data = await res.json();
+                const res = await fetch(`/Capstone1/api/quizzes.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', body: fd });
+                const data = await parseApiResponse(res);
                 if (data.success) { closeModal('quizModal'); showToast(editId ? '[Check] Quiz updated!' : '[Check] Quiz created!'); loadQuizzes(); }
                 else { err.textContent = '[!] ' + data.message; err.style.display = 'block'; }
             } else {
@@ -3542,8 +3555,8 @@ function sectionColor(string $sec): array
                 }
                 const payload = { course_id, title, description: document.getElementById('quiz-desc').value.trim(), time_limit: document.getElementById('quiz-time').value || null, max_score: document.getElementById('quiz-maxscore').value || 100, open_at: document.getElementById('quiz-open').value || null, close_at: document.getElementById('quiz-close').value || null, quiz_type: 'questions', questions };
                 if (editId) payload.id = editId;
-                const res = await fetch(`api/quizzes.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                const data = await res.json();
+                const res = await fetch(`/Capstone1/api/quizzes.php?action=${editId ? 'update' : 'create'}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await parseApiResponse(res);
                 if (data.success) { closeModal('quizModal'); showToast(editId ? '[Check] Quiz updated!' : '[Check] Quiz created!'); loadQuizzes(); }
                 else { err.textContent = '[!] ' + data.message; err.style.display = 'block'; }
             }
@@ -3553,8 +3566,8 @@ function sectionColor(string $sec): array
             document.getElementById('results-title').textContent = '[Chart] ' + title + (quizType === 'file' ? ' — Grade Submissions' : ' — Results');
             document.getElementById('results-body').innerHTML = loadingCard();
             openModal('resultsModal');
-            const res = await fetch(`api/quizzes.php?action=results&id=${quizId}`);
-            const data = await res.json();
+            const res = await fetch(`/Capstone1/api/quizzes.php?action=results&id=${quizId}`);
+            const data = await parseApiResponse(res);
             if (!data.success || !data.data.length) { document.getElementById('results-body').innerHTML = '<div style="padding:3rem;text-align:center;color:#bbb"><div style="font-size:2.5rem;margin-bottom:.5rem"></div>No submissions yet.</div>'; return; }
             const isFile = quizType === 'file';
             const cols = isFile ? '1fr 90px 90px 120px 130px' : '1fr 80px 100px 110px';
@@ -3598,13 +3611,13 @@ function sectionColor(string $sec): array
             const inputs = document.querySelectorAll('#results-body input[data-attempt-id]');
             const grades = [];
             inputs.forEach(inp => { const ri = document.querySelector(`input[data-remarks-for-attempt="${inp.dataset.attemptId}"]`); grades.push({ attempt_id: inp.dataset.attemptId, student_id: inp.dataset.studentId, quiz_id: quizId, score: inp.value, remarks: ri ? ri.value : '' }); });
-            const res = await fetch('api/quizzes.php?action=grade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ grades }) });
-            const data = await res.json();
+            const res = await fetch('/Capstone1/api/quizzes.php?action=grade', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ grades }) });
+            const data = await parseApiResponse(res);
             if (data.success) { showToast('[Check] Grades saved!'); closeModal('resultsModal'); loadQuizzes(); }
             else showToast('[!] Could not save grades.', true);
         }
 
-        async function deleteQuiz(id) { if (!confirm('Delete this quiz and all submissions?')) return; await fetch(`api/quizzes.php?action=delete&id=${id}`, { method: 'DELETE' }); showToast(' Quiz deleted.'); loadQuizzes(); }
+        async function deleteQuiz(id) { if (!confirm('Delete this quiz and all submissions?')) return; await fetch(`/Capstone1/api/quizzes.php?action=delete&id=${id}`, { method: 'DELETE' }); showToast(' Quiz deleted.'); loadQuizzes(); }
 
         /*  QUESTION BUILDER  */
         function addQuestion() {
@@ -3662,8 +3675,8 @@ function sectionColor(string $sec): array
             wrap.innerHTML = loadingCard();
             gradeData = {};
             try {
-                const res = await fetch(`api/grades.php?action=list&course_id=${cid}`);
-                const data = await res.json();
+                const res = await fetch(`/Capstone1/api/grades.php?action=list&course_id=${cid}`);
+                const data = await parseApiResponse(res);
                 if (!data.success) {
                     wrap.innerHTML = emptyCard('[!]', data.message || 'Could not load grades.');
                     return;
@@ -3824,8 +3837,8 @@ function sectionColor(string $sec): array
             document.querySelectorAll('#grades-table-wrap input[data-student]').forEach(inp => {
                 payload.push({ student_id: inp.dataset.student, col_id: inp.dataset.col, score: inp.value !== '' ? parseFloat(inp.value) : null, course_id: cid });
             });
-            const res = await fetch('api/grades.php?action=save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ grades: payload }) });
-            const data = await res.json();
+            const res = await fetch('/Capstone1/api/grades.php?action=save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ grades: payload }) });
+            const data = await parseApiResponse(res);
             if (data.success) {
                 showToast('[Check] Grades saved!');
                 const bar = document.getElementById('grade-action-bar');
@@ -3866,14 +3879,14 @@ function sectionColor(string $sec): array
             wrap.innerHTML = loadingCard();
 
             try {
-                const res  = await fetch(`api/attendance.php?action=list&course_id=${cid}&date=${date}`);
+                const res  = await fetch(`/Capstone1/api/attendance.php?action=list&course_id=${cid}&date=${date}`);
 
                 // Guard: parse error response even if it's not JSON
                 let data;
-                try { data = await res.json(); }
+                try { data = await parseApiResponse(res); }
                 catch (_) {
                     // Clone and read raw text to expose exact server output
-                    const raw = await fetch(`api/attendance.php?action=list&course_id=${cid}&date=${date}`).then(r => r.text());
+                    const raw = await fetch(`/Capstone1/api/attendance.php?action=list&course_id=${cid}&date=${date}`).then(r => r.text());
                     console.error('RAW SERVER RESPONSE:', raw);
                     wrap.innerHTML = emptyCard('[!]', 'Server error: ' + raw.substring(0, 300));
                     return;
@@ -4013,12 +4026,12 @@ function sectionColor(string $sec): array
             if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '[...] Saving…'; }
 
             try {
-                const res  = await fetch('api/attendance.php?action=save', {
+                const res  = await fetch('/Capstone1/api/attendance.php?action=save', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ course_id: parseInt(cid), date, records })
                 });
-                const data = await res.json();
+                const data = await parseApiResponse(res);
                 if (data.success) showToast('[Check] Attendance saved successfully!');
                 else showToast('[!] ' + (data.message || 'Failed to save attendance.'), true);
             } catch (err) {
