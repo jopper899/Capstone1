@@ -1892,7 +1892,7 @@ $hsSections = [
 
     async function loadAssignments() {
       try {
-        const res = await fetch('api/teacher_assignments.php?action=list');
+        const res = await fetch('/Capstone1/api/admin/teacher_assignments.php?action=list');
         const data = await parseApiResponse(res);
         if (data.success) {
           allAssignments = data.data;
@@ -1915,7 +1915,7 @@ $hsSections = [
       nameEl.textContent = '— ' + name;
       wrap.innerHTML = '<div style="padding:1rem;color:#aaa;font-size:0.82rem;">Loading...</div>';
       try {
-        const res = await fetch(`api/teacher_assignments.php?action=list&teacher_id=${tid}`);
+        const res = await fetch(`/Capstone1/api/admin/teacher_assignments.php?action=list&teacher_id=${tid}`);
         const data = await parseApiResponse(res);
         if (!data.success || data.data.length === 0) {
           wrap.innerHTML = '<div class="empty-assign"><span>📭</span>No assignments yet for this teacher.</div>';
@@ -1994,14 +1994,15 @@ $hsSections = [
       let saved = 0, errors = [];
       for (const course_id of course_ids) {
         try {
-          const res = await fetch('api/teacher_assignments.php?action=assign', {
+          const res = await fetch('/Capstone1/api/admin/teacher_assignments.php?action=assign', {
             method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body: JSON.stringify({ teacher_id, course_id, section, school_year, semester })
           });
           const data = await parseApiResponse(res);
           if (data.success) saved++;
           else errors.push(data.message);
-        } catch (e) { errors.push('Network error'); }
+        } catch (e) { errors.push(e.message || 'Request failed'); }
       }
       if (saved > 0) {
         showToast('✅ ' + saved + ' assignment' + (saved !== 1 ? 's' : '') + ' saved!');
@@ -2019,7 +2020,7 @@ $hsSections = [
     async function removeAssignment(id) {
       if (!confirm('Remove this assignment?')) return;
       try {
-        const res = await fetch(`api/teacher_assignments.php?action=remove&id=${id}`, { method: 'DELETE' });
+        const res = await fetch(`/Capstone1/api/admin/teacher_assignments.php?action=remove&id=${id}`, { method: 'DELETE' });
         const data = await parseApiResponse(res);
         if (data.success) {
           showToast('🗑️ Assignment removed.');
@@ -2056,7 +2057,7 @@ $hsSections = [
 
     async function loadAllEnrollments() {
       try {
-        const res = await fetch('api/enrollments.php?action=list');
+        const res = await fetch('/Capstone1/api/admin/enrollments.php?action=list');
         const data = await parseApiResponse(res);
         if (data.success) { allEnrollments = data.data; renderEnrTable(allEnrollments); }
       } catch (e) { console.error(e); }
@@ -2081,7 +2082,7 @@ $hsSections = [
       document.querySelectorAll('.enr-chk').forEach(cb => cb.checked = false);
 
       try {
-        const res = await fetch(`api/enrollments.php?action=list&student_id=${sid}`);
+        const res = await fetch(`/Capstone1/api/admin/enrollments.php?action=list&student_id=${sid}`);
         const data = await parseApiResponse(res);
 
         if (!data.success || !data.data.length) {
@@ -2157,8 +2158,10 @@ $hsSections = [
       }
 
       try {
-        const res = await fetch('api/enrollments.php?action=enroll', {
-          method: 'POST', body: JSON.stringify({ student_id, course_ids })
+        const res = await fetch('/Capstone1/api/admin/enrollments.php?action=enroll', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ student_id, course_ids })
         });
         const data = await parseApiResponse(res);
         if (data.success) {
@@ -2168,13 +2171,13 @@ $hsSections = [
         } else {
           errEl.textContent = '⚠️ ' + data.message; errEl.style.display = 'block';
         }
-      } catch (e) { errEl.textContent = '⚠️ Network error.'; errEl.style.display = 'block'; }
+      } catch (e) { errEl.textContent = '⚠️ ' + (e.message || 'Request failed.'); errEl.style.display = 'block'; }
     }
 
     async function removeEnrollment(id) {
       if (!confirm('Remove this enrollment?')) return;
       try {
-        const res = await fetch(`api/enrollments.php?action=remove&id=${id}`, { method: 'DELETE' });
+        const res = await fetch(`/Capstone1/api/admin/enrollments.php?action=remove&id=${id}`, { method: 'DELETE' });
         const data = await parseApiResponse(res);
         if (data.success) {
           showToast('🗑️ Enrollment removed.');
