@@ -980,7 +980,7 @@ $thumbGrads = [
 
         <div class="sidebar-footer">
             <!-- Keeping Sign Out here too for redundancy, but main access is now in Topbar -->
-            <a href="logout.php" class="nav-link danger" style="justify-content: center;">
+            <a href="/Capstone1/logout.php" class="nav-link danger" style="justify-content: center;">
                 <svg class="icon" viewBox="0 0 24 24">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                     <polyline points="16 17 21 12 16 7"></polyline>
