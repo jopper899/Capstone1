@@ -2816,10 +2816,10 @@ function sectionColor(string $sec): array
                     <div class="page-title">My Profile</div>
                     <div class="page-sub">View and update your personal information.</div>
                 </div>
-                <?php include 'includes/profile_panel.php'; ?>
+                <?php include 'shared/components/profile_panel.php'; ?>
             </div>
 
-            <?php include 'includes/chatbot.php'; ?>
+            <?php include 'shared/components/chatbot.php'; ?>
 
         </main>
         <div class="footer-bar">© 2026 Arandia College eLMS — SHS &amp; HS Teacher Portal</div>
